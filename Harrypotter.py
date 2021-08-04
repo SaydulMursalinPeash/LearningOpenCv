@@ -1,12 +1,17 @@
 import cv2 as cv
 import numpy as np
 
-
 def nothing(x):
     pass
 
-cv.namedWindow('Tracker')
 cap=cv.VideoCapture(0)
+background=0
+
+for i in range(30):
+    ret,background=cap.read()
+
+background=np.flip(background,axis=1)
+
 LB=cv.createTrackbar('LB','Tracker',0,255,nothing)
 LG=cv.createTrackbar('LG','Tracker',0,255,nothing)
 LR=cv.createTrackbar('LR','Tracker',0,255,nothing)
@@ -17,10 +22,9 @@ UR=cv.createTrackbar('UR','Tracker',0,255,nothing)
 
 while True:
     a,frame=cap.read()
-    #img=cv.imread('smarties.png',-1)
+    frame =np.flip(frame,axis=1)
     hsv=cv.cvtColor(frame,cv.COLOR_BGR2HSV)
-    blur=cv.GaussianBlur(hsv,(35,35),0)
-
+    
     lb=cv.getTrackbarPos('LB','Tracker')
     lg=cv.getTrackbarPos('LG','Tracker')
     lr=cv.getTrackbarPos('LR','Tracker')
@@ -30,17 +34,16 @@ while True:
 
     l_b= np.array([lb,lg,lr])
     u_b=np.array([ub,ug,ur])
-    print(l_b,u_b)
+    mask=cv.inRange(hsv,l_b,u_b)
 
-    mask= cv.inRange(hsv,l_b,u_b)
-    res=cv.bitwise_and(frame,frame,mask=mask)
-    cv.imshow('orriginal',frame)
-    cv.imshow('mask',mask)
-    cv.imshow('result',res)
-    cv.imshow('blur',blur)
+    
 
-    key=cv.waitKey(1) & 0xFF
-    if key==27:
+    cv.imshow('video',frame)
+    cv.imshow('background',background)
+    k=cv.waitKey(1) & 0xFF
+
+    if k==ord('x'):
         break
+cap.release()
 cv.destroyAllWindows()
 
